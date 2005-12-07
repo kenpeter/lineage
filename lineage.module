@@ -1,0 +1,130 @@
+<?php
+
+function lineage_taxonomy($op, $type, $term) {
+  // we care not about vocabularies
+  if ($type == 'vocabulary')
+    return;
+
+  switch ($op) {
+    case 'delete':
+      lineage_delete_term($term['tid']);
+      break;
+    case 'insert':
+    case 'update':
+      lineage_update_term($term);
+      break;
+  }
+}
+
+function lineage_help($section) {
+  switch ($section) {
+    case 'admin/modules#description': 
+      return t('Allows other modules to sort nodes by taxonomy hierarchies. Upon enabling this module, click ' . l('here', 'lineage/reset') . ' to update existing taxonomy terms. You should only need to do this once.');
+  }
+}
+
+function lineage_menu($may_cache) {
+  $items = array();
+  if ($may_cache) {
+    $items[] = array('path' => 'lineage/reset', 
+      'title' => t('reset lineage table'),
+      'callback' => 'lineage_update_page', 
+      'access' => user_access('administer taxonomy'),
+      'type' => MENU_CALLBACK
+    );
+  }
+  return $items;
+}
+
+function lineage_update_page() {
+  $output = "<p>Updated " . lineage_update_all() . " taxonomy records.</p>";
+  return $output;
+}
+
+function lineage_update_all() {
+  $tids = array();
+
+  $result = db_query("SELECT td.tid, td.name, td.weight FROM {term_data} td LEFT JOIN {term_hierarchy} th ON th.tid = td.tid WHERE th.parent = 0");
+  while ($term = db_fetch_object($result)) {
+    $tids = lineage_update_term_r($term, array(), $tids);
+  }
+  return count($tids);
+}
+
+// This can run a lot of queries, but luckily only happens when an admin
+// edits a vocabulary.
+function lineage_update_term($term) {
+  if (is_array($term))
+    $term = array2object($term);
+
+  $base = _taxonomy_get_parent_lineage($term->parent);
+
+  return count(lineage_update_term_r($term, $base, array()));
+}
+
+function lineage_update_term_r($term, $base, $tids) {
+  // Extend the base.
+  $base['base'] .= lineage_string($term);
+  
+  // Update the hierarchy for the current tid.
+  db_query("DELETE FROM {term_lineage} WHERE tid = '%d'", $term->tid);
+  db_query("INSERT INTO {term_lineage} (tid, lineage, depth) VALUES ('%d', '%s', '%d')", $term->tid, $base['base'], $base['depth']);
+
+  $base['depth']++;
+  // Mark that we've done this one to prevent looping.
+  $tids[$term->tid] = true;
+
+  // Update all the children.
+  $result = db_query("SELECT td.tid, td.name, td.weight FROM {term_hierarchy} th LEFT JOIN {term_data} td ON td.tid = th.tid WHERE th.parent = '%d'", $term->tid);
+  while ($child = db_fetch_object($result)) {
+    // loop protection, just in case.
+    if (!isset($tids[$child->tid])) {
+      $tids = lineage_update_term_r($child, $base, $tids);
+    }
+  }
+  return $tids;
+}
+
+function lineage_string($term) {
+  // add 10 to the weight cause negative numbers don't sort the same
+  // in strong form as they do numerically.
+  return sprintf("%02d", $term->weight + 10) . $term->name . "\n";
+}
+
+// recurse until there are no more parents.
+function _taxonomy_get_parent_lineage($tid) {
+  if (!$tid)
+    return array();
+  $term = db_fetch_object(db_query("SELECT td.tid, td.name, td.weight, th.parent FROM {term_hierarchy} th LEFT JOIN {term_data} td ON td.tid = th.tid WHERE td.tid = '%d'", $tid));
+
+  if (!$term->tid)
+    return $ret;
+
+  $ret = _taxonomy_get_parent_lineage($term->parent);
+  $ret['base'] .= lineage_string($term);
+  $ret['depth'] += 1;
+  return array();
+
+}
+
+function lineage_views_tables() {
+  $tables['term_lineage'] = array(
+    "name" => "term_lineage", 
+    "join" => array(
+      "left" => array(
+        "table" => "term_node",
+        "field" => "tid"
+      ), 
+      "right" => array(
+        "field" => "tid"
+      ), 
+    ),
+    "sorts" => array(
+      "lineage" => array('name' => "Taxonomy Hierarchy")
+    ),
+  );
+  
+  return $tables;
+}
+
+?>
