@@ -1,6 +1,6 @@
 <?php
 
-function lineage_taxonomy($op, $type, $term) {
+function lineage_taxonomy($op, $type, $term='') {
   // we care not about vocabularies
   if ($type == 'vocabulary')
     return;
@@ -57,7 +57,7 @@ function lineage_update_term($term) {
   if (is_array($term))
     $term = array2object($term);
 
-  $base = _taxonomy_get_parent_lineage($term->parent);
+  $base = _lineage_get_parent_lineage($term->parent);
 
   return count(lineage_update_term_r($term, $base, array()));
 }
@@ -92,7 +92,7 @@ function lineage_string($term) {
 }
 
 // recurse until there are no more parents.
-function _taxonomy_get_parent_lineage($tid) {
+function _lineage_get_parent_lineage($tid) {
   if (!$tid)
     return array();
   $term = db_fetch_object(db_query("SELECT td.tid, td.name, td.weight, th.parent FROM {term_hierarchy} th LEFT JOIN {term_data} td ON td.tid = th.tid WHERE td.tid = '%d'", $tid));
@@ -100,7 +100,7 @@ function _taxonomy_get_parent_lineage($tid) {
   if (!$term->tid)
     return $ret;
 
-  $ret = _taxonomy_get_parent_lineage($term->parent);
+  $ret = _lineage_get_parent_lineage($term->parent);
   $ret['base'] .= lineage_string($term);
   $ret['depth'] += 1;
   return array();
@@ -119,8 +119,14 @@ function lineage_views_tables() {
         "field" => "tid"
       ), 
     ),
+    "fields" => array(
+      "depth" => array(
+        'name' => "Lineage: Depth", 
+        'sortable' => false
+      ),
+    ),
     "sorts" => array(
-      "lineage" => array('name' => "Taxonomy Hierarchy")
+      "lineage" => array('name' => "Lineage: Taxonomy Hierarchy")
     ),
   );
   
