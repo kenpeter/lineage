@@ -4,4 +4,4 @@ CREATE TABLE term_lineage (
   depth int(10),
   KEY tid (tid),
   KEY lineage (lineage)
-) TYPE=MyISAM;
+) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;

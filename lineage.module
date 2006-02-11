@@ -55,7 +55,7 @@ function lineage_update_all() {
 // edits a vocabulary.
 function lineage_update_term($term) {
   if (is_array($term))
-    $term = array2object($term);
+    $term = (object) $term;
 
   $base = _lineage_get_parent_lineage($term->parent);
 
@@ -131,6 +131,10 @@ function lineage_views_tables() {
   );
   
   return $tables;
+}
+
+function lineage_update_1() {
+  return _system_update_utf8(array('term_lineage'));
 }
 
 ?>
