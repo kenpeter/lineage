@@ -1,7 +1,0 @@
-CREATE TABLE term_lineage (
-  tid int(10) unsigned NOT NULL default '0',
-  lineage varchar(255) NOT NULL default '',
-  depth int(10),
-  KEY tid (tid),
-  KEY lineage (lineage)
-) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;

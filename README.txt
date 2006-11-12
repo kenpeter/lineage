@@ -5,11 +5,8 @@ another sort option to the views module.
 
 To install:
 
-1) Execute lineage.mysql or lineage.pgsql to add the new table to the
-   database.
+1) Enable the module in admin/modules.
 
-2) Enable the module in admin/modules.
-
-3) If you have existing hierarchies, be sure to set up the existing
+2) If you have existing hierarchies, be sure to set up the existing
    database by going to lineage/reset. You only need to do this once,
    though there is no harm in doing it again.
