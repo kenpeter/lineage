@@ -16,29 +16,8 @@ function lineage_taxonomy($op, $type, $term='') {
   }
 }
 
-function lineage_help($section) {
-  switch ($section) {
-    case 'admin/modules#description': 
-      return t('Allows other modules to sort nodes by taxonomy hierarchies. Upon enabling this module, click ' . l('here', 'lineage/reset') . ' to update existing taxonomy terms. You should only need to do this once.');
-  }
-}
-
-function lineage_menu($may_cache) {
-  $items = array();
-  if ($may_cache) {
-    $items[] = array('path' => 'lineage/reset', 
-      'title' => t('reset lineage table'),
-      'callback' => 'lineage_update_page', 
-      'access' => user_access('administer taxonomy'),
-      'type' => MENU_CALLBACK
-    );
-  }
-  return $items;
-}
-
-function lineage_update_page() {
-  $output = "<p>Updated " . lineage_update_all() . " taxonomy records.</p>";
-  return $output;
+function lineage_enable() {
+  drupal_set_message(t("Updated @number taxonomy records.", array('@number' => lineage_update_all())));
 }
 
 function lineage_update_all() {

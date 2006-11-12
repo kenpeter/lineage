@@ -1,0 +1,4 @@
+; $Id$
+name = Taxonomy Lineage
+description = Allows other modules to sort nodes by taxonomy hierarchies
+version = $Name$
