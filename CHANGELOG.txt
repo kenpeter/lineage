@@ -1,0 +1,2 @@
+Lineage 1.1
+  o #83580: Provide missing lineage_term_delete function.

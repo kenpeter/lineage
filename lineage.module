@@ -64,6 +64,10 @@ function lineage_update_term_r($term, $base, $tids) {
   return $tids;
 }
 
+function lineage_delete_term($tid) {
+  db_query("DELETE FROM {term_lineage} WHERE tid = '%d'", $tid);
+}
+
 function lineage_string($term) {
   // add 10 to the weight cause negative numbers don't sort the same
   // in strong form as they do numerically.
