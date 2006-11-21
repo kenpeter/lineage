@@ -1,2 +1,3 @@
 Lineage 1.1
   o #83580: Provide missing lineage_term_delete function.
+  o #93249: Add sortable field to views data
