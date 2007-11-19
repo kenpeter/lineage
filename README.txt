@@ -7,6 +7,7 @@ To install:
 
 1) Enable the module in admin/modules.
 
-2) If you have existing hierarchies, be sure to set up the existing
-   database by going to lineage/reset. You only need to do this once,
-   though there is no harm in doing it again.
+To Use:
+
+You will probably want the views_bonus_lineage_tree module from
+http://drupal.org/project/views_bonus.

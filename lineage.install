@@ -31,3 +31,8 @@ function lineage_uninstall() {
 function lineage_update_1() {
   return _system_update_utf8(array('term_lineage'));
 }
+
+function lineage_update_2() {
+  // fixed a bug that left the table in an inconsistent state. This should fix it.
+  return lineage_update_all();
+}

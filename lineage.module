@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Implementation of hook_taxonomy()
+ */
 function lineage_taxonomy($op, $type, $term='') {
   // we care not about vocabularies
   if ($type == 'vocabulary')
@@ -30,14 +33,9 @@ function lineage_update_all() {
   return count($tids);
 }
 
-// This can run a lot of queries, but luckily only happens when an admin
-// edits a vocabulary.
 function lineage_update_term($term) {
-  if (is_array($term))
-    $term = (object) $term;
-
+  $term = (object)$term;
   $base = _lineage_get_parent_lineage($term->parent);
-
   return count(lineage_update_term_r($term, $base, array()));
 }
 
@@ -81,13 +79,12 @@ function _lineage_get_parent_lineage($tid) {
   $term = db_fetch_object(db_query("SELECT td.tid, td.name, td.weight, th.parent FROM {term_hierarchy} th LEFT JOIN {term_data} td ON td.tid = th.tid WHERE td.tid = '%d'", $tid));
 
   if (!$term->tid)
-    return $ret;
+    return array();
 
   $ret = _lineage_get_parent_lineage($term->parent);
   $ret['base'] .= lineage_string($term);
   $ret['depth'] += 1;
-  return array();
-
+  return $ret;
 }
 
 function lineage_views_tables() {
