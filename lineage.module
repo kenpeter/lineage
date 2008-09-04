@@ -1,20 +1,20 @@
 <?php
 
 /**
- * Implementation of hook_taxonomy()
+ * Implementation of hook_taxonomy().
  */
-function lineage_taxonomy($op, $type, $term='') {
+function lineage_taxonomy($op, $type, $array = null) {
   // we care not about vocabularies
   if ($type == 'vocabulary')
     return;
 
   switch ($op) {
     case 'delete':
-      lineage_delete_term($term['tid']);
+      lineage_delete_term($array['tid']);
       break;
     case 'insert':
     case 'update':
-      lineage_update_term($term);
+      lineage_update_term($array);
       break;
   }
 }
@@ -24,25 +24,26 @@ function lineage_enable() {
 }
 
 function lineage_update_all() {
-  $tids = array();
+  $count = 0;
 
   $result = db_query("SELECT td.tid, td.name, td.weight FROM {term_data} td LEFT JOIN {term_hierarchy} th ON th.tid = td.tid WHERE th.parent = 0");
   while ($term = db_fetch_object($result)) {
-    $tids = lineage_update_term_r($term, array(), $tids);
+    $count += lineage_update_term($term);
   }
-  return count($tids);
+
+  return $count;
 }
 
 function lineage_update_term($term) {
-  $term = (object)$term;
+  if (is_array($term)) $term = (object) $term;
   $base = _lineage_get_parent_lineage($term->parent);
-  return count(lineage_update_term_r($term, $base, array()));
+  return count(lineage_update_term_r($term, $base));
 }
 
-function lineage_update_term_r($term, $base, $tids) {
+function lineage_update_term_r($term, $base, $tids = array()) {
   // Extend the base.
   $base['base'] .= lineage_string($term);
-  
+
   // Update the hierarchy for the current tid.
   db_query("DELETE FROM {term_lineage} WHERE tid = '%d'", $term->tid);
   db_query("INSERT INTO {term_lineage} (tid, lineage, depth) VALUES ('%d', '%s', '%d')", $term->tid, $base['base'], $base['depth']);
@@ -74,39 +75,40 @@ function lineage_string($term) {
 
 // recurse until there are no more parents.
 function _lineage_get_parent_lineage($tid) {
-  if (!$tid)
-    return array();
-  $term = db_fetch_object(db_query("SELECT td.tid, td.name, td.weight, th.parent FROM {term_hierarchy} th LEFT JOIN {term_data} td ON td.tid = th.tid WHERE td.tid = '%d'", $tid));
+  $result = db_query("SELECT td.tid, td.name, td.weight, th.parent FROM {term_hierarchy} th LEFT JOIN {term_data} td ON td.tid = th.tid WHERE td.tid = '%d'", $tid);
 
-  if (!$term->tid)
-    return array();
+  if ($term = db_fetch_object($result)) {
+    $ret = _lineage_get_parent_lineage($term->parent);
 
-  $ret = _lineage_get_parent_lineage($term->parent);
-  $ret['base'] .= lineage_string($term);
-  $ret['depth'] += 1;
-  return $ret;
+    $ret['base'] .= lineage_string($term);
+    $ret['depth'] += 1;
+
+    return $ret;
+  }
+
+  return array();
 }
 
 function lineage_views_tables() {
   $tables['term_lineage'] = array(
-    "name" => "term_lineage", 
+    "name" => "term_lineage",
     "join" => array(
       "left" => array(
         "table" => "term_node",
         "field" => "tid"
-      ), 
+      ),
       "right" => array(
         "field" => "tid"
-      ), 
+      ),
     ),
     "fields" => array(
       "lineage" => array(
-      	'name' => "Lineage: Taxonomy Hierarchy",
+        'name' => "Lineage: Taxonomy Hierarchy",
         'sortable' => true,
         'handler' => 'lineage_view_handler',
       ),
       "depth" => array(
-        'name' => "Lineage: Depth", 
+        'name' => "Lineage: Depth",
         'sortable' => false
       ),
     ),
@@ -114,20 +116,23 @@ function lineage_views_tables() {
       "lineage" => array('name' => "Lineage: Taxonomy Hierarchy")
     ),
   );
-  
+
   return $tables;
 }
 
 function lineage_view_handler($field, $field_details, $content, $content_details) {
-	// split lineage string into pieces, i.e. hierarchial path (getting rid of weight numbers, too)
-	$path = split("\n[0-9]+", "\n".$content);
-	$s = '';
-	// compose the path in readable form
-	foreach ($path as $a) {
-		if ($s != '') $s .= '  /  ';
-		$s .= str_replace("\n", '', $a);
-	}
-	// output pseudo-link (without href) with hierarchically indented term and full path via title/alt-rollover  
-	return str_repeat('&nbsp;&nbsp;&nbsp;', substr_count($content, "\n")-1)
-				 . '<a title="' . $s . '" alt="' . $s . '">' . $a . '</a>';
+  if ($content == '') return '';
+
+  // split lineage string into pieces, i.e. hierarchial path (getting rid of weight numbers, too)
+  $path = split("\n[0-9]+", "\n".$content);
+  $s = '';
+  // compose the path in readable form
+  foreach ($path as $a) {
+    if ($s != '') $s .= '  /  ';
+    $s .= str_replace("\n", '', $a);
+  }
+  // output pseudo-link (without href) with hierarchically indented term and full path via title/alt-rollover  
+  return str_repeat('&nbsp;&nbsp;&nbsp;', substr_count($content, "\n")-1)
+         . '<a title="' . $s . '" alt="' . $s . '">' . $a . '</a>';
 }
+
