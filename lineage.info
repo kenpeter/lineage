@@ -1,7 +1,9 @@
 ; $Id$
 name = Taxonomy Lineage
 description = Allows other modules to sort nodes by taxonomy hierarchies
-dependencies = taxonomy views
+core = 6.x
+dependencies[] = taxonomy
+dependencies[] = views
 
 ; Information added by drupal.org packaging script on 2007-06-19
 version = "5.x-1.x-dev"
