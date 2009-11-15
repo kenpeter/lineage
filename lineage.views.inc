@@ -11,7 +11,11 @@ function lineage_views_data() {
         'node' => array(
           'left_table' => 'term_node',
           'left_field' => 'tid',
-          'field' => 'tid'
+          'field' => 'tid',
+        ),
+        'term_data' => array(
+          'left_field' => 'tid',
+          'field' => 'tid',
         )
       )
     ),
