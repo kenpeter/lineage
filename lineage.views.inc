@@ -16,22 +16,26 @@ function lineage_views_data() {
         'term_data' => array(
           'left_field' => 'tid',
           'field' => 'tid',
-        )
-      )
+        ),
+      ),
     ),
     'lineage' => array(
       'title' => t("Hierarchy"),
       'field' => array(
         'handler' => 'lineage_handler_field',
         'click sortable' => TRUE,
+        'help' => t('Taxonomy lineage heirarchy'),
       ),
       'sort' => array(
-        'handler' => 'views_handler_sort'
-      )
+        'handler' => 'views_handler_sort',
+      ),
     ),
     'depth' => array(
       'title' => t("Depth"),
-      'field' => array('handler' => 'views_handler_field')
+      'field' => array(
+        'handler' => 'views_handler_field',
+        'help' => t('Taxonomy lineage depth'),
+      ),
     ),
   );
 
@@ -45,9 +49,9 @@ function lineage_views_handlers() {
   return array(
     'handlers' => array(
       'lineage_handler_field' => array(
-        'parent' => 'views_handler_field'
-      )
-    )
+        'parent' => 'views_handler_field',
+      ),
+    ),
   );
 }
 
