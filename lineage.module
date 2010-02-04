@@ -225,6 +225,16 @@ function lineage_string($term) {
     . "-" . $term->name . "\n";
 }
 
+/**
+ * Strip the weight from the beginning of a lineage term string.
+ * @param term_string one line of a lineage, with weight
+ * @return one line of a lineage, with the weight removed
+ */
+function lineage_strip_weight($term_string) {
+  // Remove numbers 0-9 followed by a hyphen, at most once.
+  return preg_replace("([0-9]+-)", "", $term_string,1);
+}
+
 function _lineage_get_parent_lineage($tid) {
   $result = db_query("SELECT td.tid, td.name, td.weight, td.vid, th.parent FROM {term_hierarchy} th LEFT JOIN {term_data} td ON td.tid = th.tid WHERE td.tid = %d", $tid);
 

@@ -1,3 +1,12 @@
+// $Id$
+
+Lineage 6.x-1.x, 2009-02-04
+---------------------------
+#699198 by xjm: Provide lineage_strip_weight and refactor field handler to use this.
+
+
+Lineage 5.x
+---------------------------
 Lineage 1.4
   o #110861: Fix a bug which caused lineage to think that any new terms had no
   parents
