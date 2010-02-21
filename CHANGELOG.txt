@@ -1,7 +1,8 @@
 // $Id$
 
-Lineage 6.x-1.x, 2009-02-04
+Lineage 6.x-1.x, xxxx-xx-xx
 ---------------------------
+#555316 by xjm: Improve field handler.
 #699198 by xjm: Provide lineage_strip_weight and refactor field handler to use this.
 
 
