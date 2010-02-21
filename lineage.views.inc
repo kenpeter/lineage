@@ -55,3 +55,25 @@ function lineage_views_handlers() {
   );
 }
 
+
+/**
+ * Implements hook_views_plugins().
+ */
+function lineage_views_plugins() {
+  return array(
+    'style' => array( // Declare the nested list style plugin.
+      'lineage_nested' => array(
+        'title' => t('Lineage nested list'),
+        'theme' => 'views_view_lineage_nested',
+        'help' => t('Displays rows in a nested list, grouped by term lineage'),
+        'handler' => 'views_plugin_style_lineage_nested',
+        'uses row plugin' => TRUE,
+        'uses fields' => TRUE,
+        'uses grouping' => TRUE,
+        'uses options' => TRUE,
+        'type' => 'normal',
+        'parent' => 'list',
+      ),
+    )
+  );
+}

@@ -235,6 +235,21 @@ function lineage_strip_weight($term_string) {
   return preg_replace("([0-9]+-)", "", $term_string,1);
 }
 
+/** Get the weight string from the beginning of a lineage term string.
+ * @param term_string one line of a lineage, with weight
+ * @return The weight from term_string, or false on failure.
+ */
+function lineage_get_weight($term_string) {
+  $matches = array();
+  if (preg_match("([0-9]+-)",$term_string,$matches)){
+    // Return the matched weight pattern, minus the hyphen at the end.
+    return substr($matches[0],0,-1);
+  }
+  else {
+    return false;
+  }
+}
+
 function _lineage_get_parent_lineage($tid) {
   $result = db_query("SELECT td.tid, td.name, td.weight, td.vid, th.parent FROM {term_hierarchy} th LEFT JOIN {term_data} td ON td.tid = th.tid WHERE td.tid = %d", $tid);
 
