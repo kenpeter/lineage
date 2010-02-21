@@ -6,7 +6,7 @@
 function lineage_views_data() {
   $tables['term_lineage'] = array(
     'table' => array(
-      'group' => 'Taxonomy',
+      'group' => t('Taxonomy'),
       'join' => array(
         'node' => array(
           'left_table' => 'term_node',

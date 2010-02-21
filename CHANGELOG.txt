@@ -2,6 +2,7 @@
 
 Lineage 6.x-1.x, xxxx-xx-xx
 ---------------------------
+#707314 by praseodym: Translation issue in lineage.views.inc.
 #555316 by xjm: Improve field handler.
 #699198 by xjm: Provide lineage_strip_weight and refactor field handler to use this.
 
