@@ -104,7 +104,9 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
   function label_sets($nested_sets) {
     $new_sets = array();
     foreach ($nested_sets as $key => $set) {
-      $key = lineage_strip_weight($key);
+      if (!is_numeric($key)) {
+        $key = lineage_strip_weight($key);
+      }
       $new_sets[$key] = $set;
       if (is_array($set)) {
         $new_sets[$key] = $this->label_sets($set);

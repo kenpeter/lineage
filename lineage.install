@@ -48,3 +48,9 @@ function lineage_update_2() {
   // fixed a bug that left the table in an inconsistent state. This should fix it.
   return lineage_update_all();
 }
+
+function lineage_update_6000() {
+  // Changed weight string format, so trigger a full update.
+  lineage_update_all();
+  return array();
+}

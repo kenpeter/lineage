@@ -234,7 +234,15 @@ function lineage_string($term) {
  */
 function lineage_strip_weight($term_string) {
   // Remove numbers 0-9 followed by a hyphen, at most once.
-  return preg_replace("([0-9]+-)", "", $term_string, 1);
+  $term_name = preg_replace("([0-9]+-)", "", $term_string, 1);
+  if ($term_name != $term_string) {
+    return $term_name;
+  }
+  else {
+    // Passed string did not include a proper weight; set a warning.
+    _lineage_format_warning();
+    return FALSE;
+  }
 }
 
 /** Get the weight string from the beginning of a lineage term string.
@@ -248,6 +256,8 @@ function lineage_get_weight($term_string) {
     return substr($matches[0], 0, -1);
   }
   else {
+    // Passed string did not include a proper weight; set a warning.
+    _lineage_format_warning();
     return FALSE;
   }
 }
@@ -300,4 +310,15 @@ function _lineage_weights($vid) {
   }
 
   return $weights[$vid];
+}
+
+/**
+ * Displays a warning if appears that lineage strings are in the wrong format.
+ */
+function _lineage_format_warning() {
+  drupal_set_message(
+    t("Warning: your lineage data appears to be in an old format.  Try disabling and re-enabling the module, or run update.php."),
+    'warning',
+    FALSE
+  );
 }

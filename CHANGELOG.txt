@@ -2,18 +2,20 @@
 
 Lineage 6.x-1.x, xxxx-xx-xx
 ---------------------------
+ o #733760 by xjm: Added hook_update_N() to update weight strings to the 
+   new format.
  o #733738 by xjm: Code cleanup.
- o #612908 by xjm: Add lineage nested list style plugin.
- o #707314 by praseodym: Translation issue in lineage.views.inc.
- o #555316 by xjm: Improve field handler.
- o #699198 by xjm: Provide lineage_strip_weight and refactor field handler to 
+ o #612908 by xjm: Added lineage nested list style plugin.
+ o #707314 by praseodym: Fixed translation issue in lineage.views.inc.
+ o #555316 by xjm: Improved field handler.
+ o #699198 by xjm: Added lineage_strip_weight and refactored field handler to 
    use this.
- o #611994 by xjm - Fetching null "data" for tid 0 may cause duplicate, 
+ o #611994 by xjm: Fetching null "data" for tid 0 may cause duplicate, 
    malformed lineage
- o #613372 by xjm - Override processing at admin/content/taxonomy to trigger 
-   lineage_update_all()
- o #507472 by xjm - Fix weight string handling for D6
- o Some coding standards cleanup
+ o #613372 by xjm: Added hook_form_FORM_ID_alter() to override processing at 
+   admin/content/taxonomy so it triggers lineage_update_all().
+ o #507472 by xjm: Fixed weight string handling for D6.
+ o Some coding standards cleanup.
 
 Lineage 5.x
 ---------------------------
