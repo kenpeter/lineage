@@ -1,7 +1,13 @@
 <?php
+// $Id$
 
 /**
- * Field handler for Taxonomy: Hierarchy
+ * @file
+ * Views field plugin for lineage's field handler.
+ */
+
+/**
+ * Field handler for Taxonomy: Hierarchy.
  */
 class lineage_handler_field extends views_handler_field {
   /**
@@ -35,21 +41,21 @@ class lineage_handler_field extends views_handler_field {
       '#type' => 'textfield',
       '#title' => t('Term prefix'),
       '#default_value' => $options['lineage']['prefix'],
-      '#description' =>t("Appended before each term name in the lineage.  You may include HTML."),
+      '#description' => t("Appended before each term name in the lineage.  You may include HTML."),
     );
 
     $form['lineage']['suffix'] = array(
       '#type' => 'textfield',
       '#title' => t('Term suffix'),
       '#default_value' => $options['lineage']['suffix'],
-      '#description' =>t("Appended before each term name in the lineage.  You may include HTML."),
+      '#description' => t("Appended before each term name in the lineage.  You may include HTML."),
     );
 
     $form['lineage']['delimiter'] = array(
       '#type' => 'textfield',
       '#title' => t('Delimiter between terms'),
       '#default_value' => $options['lineage']['delimiter'],
-      '#description' =>t("Use %linebreak_code for line breaks.", array('%linebreak_code' => '\n')),
+      '#description' => t("Use %linebreak_code for line breaks.", array('%linebreak_code' => '\n')),
     );
   }
 
@@ -74,13 +80,13 @@ class lineage_handler_field extends views_handler_field {
     // Compose the rendered hierarchy according to handler form options.
 
     if ($strip_weights) {
-      $term_strings = array_map("lineage_strip_weight",$term_strings);
+      $term_strings = array_map("lineage_strip_weight", $term_strings);
     }
 
     if ($machine_safe) {
       // Replace non-alphanumeric characters with a hyphen.
       $non_alphanumeric = '/[^a-zA-Z0-9]+/ ';
-      $term_strings = preg_replace($non_alphanumeric,'-',$term_strings);
+      $term_strings = preg_replace($non_alphanumeric, '-', $term_strings);
     }
 
     if ($prefix || $suffix) {
@@ -90,11 +96,11 @@ class lineage_handler_field extends views_handler_field {
       }
     }
 
-    // The user may enter "\n" for a linebreak delimiter; 
+    // The user may enter "\n" for a linebreak delimiter;
     // replace with actual linebreak character.
-    $delimiter = str_replace("\\n","\n",$delimiter);
+    $delimiter = str_replace("\\n", "\n", $delimiter);
 
-    $rendered = implode($delimiter,$term_strings);
+    $rendered = implode($delimiter, $term_strings);
 
     // Be sure to validate and sanitize markup since we allow HTML.
     return filter_xss_admin($rendered);

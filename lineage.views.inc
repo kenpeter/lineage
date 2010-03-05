@@ -1,4 +1,10 @@
 <?php
+// $Id$
+
+/**
+ * @file
+ * Interface between lineage.module and views.module.
+ */
 
 /**
  * Implementation of hook_views_data().

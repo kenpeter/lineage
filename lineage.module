@@ -15,7 +15,7 @@ function lineage_taxonomy($op, $type, $array = NULL) {
       break;
     case 'insert':
     case 'update':
-      // Skip if we are on the admin reordering pages; 
+      // Skip if we are on the admin reordering pages;
       // it will happen be triggered by our submit handler after processing.
       if (arg() != array('admin', 'content', 'taxonomy', $array['vid'])) {
         lineage_update_term($array);
@@ -24,7 +24,7 @@ function lineage_taxonomy($op, $type, $array = NULL) {
   }
 }
 
-/** 
+/**
  * Implements hook_form_taxonomy_overview_terms_alter().
  */
 function lineage_form_taxonomy_overview_terms_alter(&$form, &$form_state) {
@@ -34,7 +34,7 @@ function lineage_form_taxonomy_overview_terms_alter(&$form, &$form_state) {
 
 /**
  * Submit handler for taxonomy_overview_terms (the admin term reordering form).
- * Overrides handling so that we can update lineages after the new term 
+ * Overrides handling so that we can update lineages after the new term
  * weights are processed.
  * This function is mostly a clone of taxonomy_overview_terms_submit, with
  * the addition of lineage_update_all calls in the appropriate places.
@@ -147,7 +147,7 @@ function lineage_update_all($vid = FALSE) {
   $base_q = "SELECT td.tid, td.name, td.weight, td.vid FROM {term_data} td LEFT JOIN {term_hierarchy} th ON th.tid = td.tid WHERE th.parent = 0";
 
   if ($vid) {
-    $result = db_query($base_q . " AND td.vid = %d",$vid);
+    $result = db_query($base_q . " AND td.vid = %d", $vid);
   }
   else {
     $result = db_query($base_q);
@@ -168,17 +168,19 @@ function lineage_update_term($term, $all = FALSE) {
   // If we are in the middle of updating all lineages, skip this.
   if (!$all) {
     // Select lineage for a different term in this vocab arbitrarily.
-    $r = db_query("SELECT tl.lineage, td.tid, td.name, td.weight, td.vid, th.parent 
-                   FROM {term_data} td
-                   LEFT JOIN {term_lineage} tl ON tl.tid = td.tid 
-                   LEFT JOIN {term_hierarchy} th ON td.tid = th.tid 
-                   WHERE td.vid = %d
-                   AND td.tid <> %d
-                   LIMIT 1;", $term->vid, $term->tid); 
+    $r = db_query("
+      SELECT tl.lineage, td.tid, td.name, td.weight, td.vid, th.parent 
+        FROM {term_data} td
+          LEFT JOIN {term_lineage} tl ON tl.tid = td.tid 
+          LEFT JOIN {term_hierarchy} th ON td.tid = th.tid 
+        WHERE td.vid = %d
+          AND td.tid <> %d
+        LIMIT 1;",
+      $term->vid, $term->tid);
 
     $other_term = db_fetch_object($r);
 
-    // If the lineage string doesn't match what we think it should be, 
+    // If the lineage string doesn't match what we think it should be,
     // an update is required.
     if ($other_term->lineage != lineage_string($other_term)) {
       $count = lineage_update_all($term->vid);
@@ -221,7 +223,7 @@ function lineage_delete_term($tid) {
 function lineage_string($term) {
   // Ensure positive weights with enough digits so that all sort properly.
   $w = _lineage_weights($term->vid);
-  return sprintf("%0" . $w['digits'] . "d", $term->weight + $w['offset']) 
+  return sprintf("%0" . $w['digits'] . "d", $term->weight + $w['offset'])
     . "-" . $term->name . "\n";
 }
 
@@ -232,7 +234,7 @@ function lineage_string($term) {
  */
 function lineage_strip_weight($term_string) {
   // Remove numbers 0-9 followed by a hyphen, at most once.
-  return preg_replace("([0-9]+-)", "", $term_string,1);
+  return preg_replace("([0-9]+-)", "", $term_string, 1);
 }
 
 /** Get the weight string from the beginning of a lineage term string.
@@ -241,12 +243,12 @@ function lineage_strip_weight($term_string) {
  */
 function lineage_get_weight($term_string) {
   $matches = array();
-  if (preg_match("([0-9]+-)",$term_string,$matches)){
+  if (preg_match("([0-9]+-)", $term_string, $matches)) {
     // Return the matched weight pattern, minus the hyphen at the end.
-    return substr($matches[0],0,-1);
+    return substr($matches[0], 0, -1);
   }
   else {
-    return false;
+    return FALSE;
   }
 }
 
@@ -288,7 +290,7 @@ function _lineage_weights($vid) {
     $min_r = db_query("SELECT MIN(weight) FROM {term_data} WHERE vid = %d", $vid);
     $weights[$vid]['min'] = db_result($min_r);
     $weights[$vid]['offset'] = ($weights[$vid]['min'] < 0) ? abs($weights[$vid]['min']) : 0;
-    
+
     $max_r = db_query("SELECT MAX(weight) FROM {term_data} WHERE vid = %d", $vid);
     $weights[$vid]['max'] = db_result($max_r);
     $weights[$vid]['digits'] = floor(log($weights[$vid]['max'] + $weights[$vid]['offset'] + 1));

@@ -1,11 +1,19 @@
 <?php
+// $Id$
+
 /**
-* Implements views_plugin_style.
-*/
+ * @file
+ * Views style plugin that allows a view to be rendered as a nested list,
+ * based on Lineage's term hierarchy.
+ */
+
+/**
+ * Implements views_plugin_style.
+ */
 class views_plugin_style_lineage_nested extends views_plugin_style_list {
   function options_form(&$form, &$form_state) {
     // @todo: include only lineage fields
-    $nesting_options = array('' => '<None>');
+    $nesting_options = array('' => '[None]');
     foreach ($this->display->handler->get_handlers('field') as $field => $handler) {
       if ($label = $handler->label()) {
         $nesting_options[$field] = $label;
@@ -22,10 +30,11 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
         '#title' => t('Nesting Field'),
         '#options' => $nesting_options,
         '#default_value' => $this->options['nesting'],
-        '#description' => t('Select the Lineage field that will control the nesting.'),  
+        '#description' =>
+          t('Select the Lineage field that will control the nesting.'),
       );
     }
-  }  
+  }
 
   function render() {
     if ($this->uses_row_plugin() && empty($this->row_plugin)) {
@@ -60,7 +69,7 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
     return $output;
   }
 
-  function render_nesting($records,$rendered=false,$nesting_field = '') {
+  function render_nesting($records, $rendered=FALSE, $nesting_field = '') {
     if (!$rendered) {
       $rendered = $records;
     }
@@ -74,7 +83,9 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
         $nesting = '';
         // @todo Avoid using eval().
         $eval = "\$nested_sets"
-          . "['".str_replace("\n","']['",$row->$field_alias . $index)."']"
+          . "['"
+          . str_replace("\n", "']['", $row->$field_alias . $index)
+          . "']"
           . " = \$rendered['$index'];";
         eval($eval);
         }
@@ -102,11 +113,11 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
     return $new_sets;
   }
 
-  function header($header,$list_depth) {
-    // Depth starts at one on the first iteration.  
+  function header($header, $list_depth) {
+    // Depth starts at one on the first iteration.
     // H1 and H2 are reserved for titles, so content headers start at H3.
-    $depth = $list_depth + 2; 
-    
+    $depth = $list_depth + 2;
+
     // Use a header tag if possible; else use a class indicating header depth.
     if ($depth <= 6) {
       return "<h$depth>$header</h$depth>\n";
@@ -121,10 +132,10 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
 
     $output = "";
     if (!empty($header)) {
-      $output .=  $this->header($header,$list_depth);
+      $output .=  $this->header($header, $list_depth);
     }
     $output .=  "<$type>\n";
-    
+
     foreach ($rows as $key => $row) {
       $output .=  "<li>\n"; // @todo Add classes.
       // If the next child is an array of rows, recurse.
@@ -137,7 +148,7 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
       }
       $output .=  "</li>\n";
     }
-    
+
     $output .=  "</$type>\n";
     return $output;
   }
