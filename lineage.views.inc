@@ -30,7 +30,7 @@ function lineage_views_data() {
       'field' => array(
         'handler' => 'lineage_handler_field',
         'click sortable' => TRUE,
-        'help' => t('Taxonomy lineage heirarchy'),
+        'help' => t('Taxonomy lineage hierarchy'),
       ),
       'sort' => array(
         'handler' => 'views_handler_sort',
