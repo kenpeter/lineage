@@ -7,6 +7,14 @@
  * based on Lineage's term hierarchy.
  */
 
+
+/**
+ * Define a base starting depth for nesting headers.
+ * We use 3 (for <h3> tags) because <h1> and <h2> are generally page titles.
+ */
+define('LINEAGE_START_DEPTH',3);
+
+
 /**
  * Implements views_plugin_style.
  */
@@ -24,14 +32,35 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
     }
 
     $options = parent::options_form($form, $form_state);
-    if (sizeof($nesting_options) > 1) { // one option is <None>
+    if (sizeof($nesting_options) > 1) { // one option is [None]
       $form['nesting'] = array(
         '#type' => 'select',
         '#title' => t('Nesting Field'),
         '#options' => $nesting_options,
         '#default_value' => $this->options['nesting'],
-        '#description' =>
-          t('Select the Lineage field that will control the nesting.'),
+        '#description' => t(
+          'Select the Lineage field that will control the nesting.'
+        ),
+      );
+      
+      $h_options = array(0 => t('default'));
+      for ($i = 1; $i <= 6; $i++) {
+        $h_options[$i] = "<h$i>";
+      }
+
+      $default_header = $this->options['start_depth'] 
+        ? $this->options['start_depth']
+        : 0;
+
+      $form['start_depth'] = array(
+        '#type' => 'select',
+        '#title' => 'Top-level header',
+        '#options' => $h_options,
+        '#default_value' => $default_header,
+        '#description' => t(
+          'Header tag to use for the top-level term in the nesting.  If %default is selected, the plugin will choose the header level based on the properties of your view.',
+          array('%default' => $h_options[0])
+        ),
       );
     }
   }
@@ -61,9 +90,28 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
       // Now, nest each grouping by the nesting field.
       $nested_set = $this->render_nesting($records, $rendered, $this->options['nesting']);
 
+      // Determine the starting depth of the header.
+      // If the user has defined a start depth, use that
+      if ($this->options['start_depth']) {
+        $start_depth = $this->options['start_depth'];
+      }
+      // Otherwise, decide based on default and whether a grouping is set.
+      else {
+        $start_depth = LINEAGE_START_DEPTH;
+        if ($this->options['grouping']) {
+          $start_depth++;
+        }
+      }
+      
       // @todo Provide theming.
-      $output .= $this->nested_list($nested_set, $title, $this->options['type']);
-
+      $output .= 
+        $this->nested_list(
+          $nested_set, 
+          $title, 
+          $this->options['type'], 
+          $start_depth
+        );
+      
     }
     unset($this->view->row_index);
     return $output;
@@ -115,11 +163,7 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
     return $new_sets;
   }
 
-  function header($header, $list_depth) {
-    // Depth starts at one on the first iteration.
-    // H1 and H2 are reserved for titles, so content headers start at H3.
-    $depth = $list_depth + 2;
-
+  function header($header, $depth) {
     // Use a header tag if possible; else use a class indicating header depth.
     if ($depth <= 6) {
       return "<h$depth>$header</h$depth>\n";
@@ -129,13 +173,13 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
     }
   }
 
-  function nested_list($rows, $header, $type, $list_depth = 0) {
-    $list_depth++;
-
+  function nested_list($rows, $header, $type, $depth = 1) {
     $output = "";
     if (!empty($header)) {
-      $output .=  $this->header($header, $list_depth);
+      $output .=  $this->header($header, $depth);
+      $depth++;
     }
+ 
     $output .=  "<$type>\n";
 
     foreach ($rows as $key => $row) {
@@ -143,7 +187,7 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
       // If the next child is an array of rows, recurse.
       if (is_array($row)) {
         // @todo Allow type to vary per list? (And how would we store that?)
-        $output .= $this->nested_list($row, $key, $type, $list_depth);
+        $output .= $this->nested_list($row, $key, $type, $depth);
       }
       else {
         $output .=  $row;
@@ -152,6 +196,7 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
     }
 
     $output .=  "</$type>\n";
+
     return $output;
   }
 }
