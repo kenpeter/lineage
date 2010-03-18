@@ -12,24 +12,58 @@
  * Define a base starting depth for nesting headers.
  * We use 3 (for <h3> tags) because <h1> and <h2> are generally page titles.
  */
-define('LINEAGE_START_DEPTH',3);
+define('LINEAGE_START_DEPTH', 3);
 
 
 /**
  * Implements views_plugin_style.
  */
 class views_plugin_style_lineage_nested extends views_plugin_style_list {
+  function respond_to_filter($filter) {
+    $allowed = array(
+      'views_handler_filter_term_node_tid',
+      'views_handler_filter_term_node_tid_depth',
+      'views_handler_argument_term_node_tid',
+      'views_handler_argument_term_node_tid_depth',
+    );
+    if (in_array($filter, $allowed)) {
+      return TRUE;
+    }
+    else {
+      return FALSE;
+    }
+  }
+
   function options_form(&$form, &$form_state) {
-    // @todo: include only lineage fields
+
+    // Assemble a list of Taxonomy Lineage fields.
     $nesting_options = array('' => '[None]');
     foreach ($this->display->handler->get_handlers('field') as $field => $handler) {
-      if ($label = $handler->label()) {
-        $nesting_options[$field] = $label;
-      }
-      else {
-        $nesting_options[$field] = $handler->ui_name();
+      // Only include lineage fields.
+      if ($handler->definition['handler'] == 'lineage_handler_field') {
+        if ($label = $handler->label()) {
+          $nesting_options[$field] = $label;
+        }
+        else {
+          $nesting_options[$field] = $handler->ui_name();
+        }
       }
     }
+
+    // Assemble a list of Taxonomy filters and arguments
+    $filter_options = array('' => '[None]');
+    foreach ($this->display->handler->get_handlers('filter') as $filter => $handler) {
+      if ($this->respond_to_filter($handler->definition['handler'])) {
+        $filter_options['Filters']['f_' . $filter] = $handler->ui_name();
+      }
+    }
+    foreach ($this->display->handler->get_handlers('argument') as $arg => $handler) {
+      if ($this->respond_to_filter($handler->definition['handler'])) {
+        $filter_options['Arguments']['a_' . $arg] = $handler->ui_name();
+      }
+    }
+
+
 
     $options = parent::options_form($form, $form_state);
     if (sizeof($nesting_options) > 1) { // one option is [None]
@@ -42,13 +76,13 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
           'Select the Lineage field that will control the nesting.'
         ),
       );
-      
+
       $h_options = array(0 => t('default'));
       for ($i = 1; $i <= 6; $i++) {
         $h_options[$i] = "<h$i>";
       }
 
-      $default_header = $this->options['start_depth'] 
+      $default_header = $this->options['start_depth']
         ? $this->options['start_depth']
         : 0;
 
@@ -62,6 +96,18 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
           array('%default' => $h_options[0])
         ),
       );
+
+      if (sizeof($filter_options) > 1) { // one option is [None]
+        $form['filter'] = array(
+          '#type' => 'select',
+          '#title' => 'Set top level with filter or argument',
+          '#options' => $filter_options,
+          '#default_value' => $this->options['filter'],
+          '#description' => t(
+            "If selected, the nesting will begin with the term set by this argument or filter, and headers for parent terms will be hidden.  (Filters and arguments are listed in the same order as in your view.)  This feature is experimental."
+          ),
+        );
+      }
     }
   }
 
@@ -70,6 +116,8 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
       vpr('views_plugin_style_default: Missing row plugin');
       return;
     }
+
+    $output = '';
 
     // First group the rows according to the grouping field, if specified.
     $sets = $this->render_grouping($this->view->result, $this->options['grouping']);
@@ -81,19 +129,47 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
         }
       }
 
-      // Now, nest each grouping by the nesting field.
-      $nested_set = $this->render_nesting($records, $this->options['nesting']);
+      // If the user specified a filter for the nesting, remove other levels.
+      $term_name = FALSE;
+      if ($this->options['filter']) {
+        
+        // Option is either a filter or an argument, marked by f and a.
+        // If it's an argument
+        if ($arg_name = strstr($this->options['filter'], "a_")) {
+          $arg_name = substr($arg_name, 2);
+          $arg = $this->display->handler->handlers['argument'][$arg_name];
+          $term = $arg->argument;
+        }
+        // If it's a filter
+        elseif ($filter_name = strstr($this->options['filter'], "f_")) {
+          $filter_name = substr($filter_name, 2);
+          $filter = $this->display->handler->handlers['filter'][$filter_name];
+          $terms = $filter->value;
+          $term = array_pop($terms);
+        }
+        
+        if (is_numeric($term)) {
+          $term_obj = taxonomy_get_term($term);
+          $term_name = $term_obj->name;
+        }
+        else {
+          $term_name = $term;
+        }
+      } 
+ 
+     // Now, nest each grouping by the nesting field.
+      $nested_set = $this->render_nesting($records, $this->options['nesting'], $term_name);
 
       // Determine the starting depth of the header.
-      // If the user has defined a start depth, use that
+      // If the user has defined a start depth, use that.
       if ($this->options['start_depth']) {
-        $start_depth = $this->options['start_depth'];
+        $depth = $this->options['start_depth'];
       }
       // Otherwise, decide based on default and whether a grouping is set.
       else {
-        $start_depth = LINEAGE_START_DEPTH;
+        $depth = LINEAGE_START_DEPTH;
         if ($this->options['grouping']) {
-          $start_depth++;
+          $depth++;
         }
       }
       
@@ -103,7 +179,7 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
           $nested_set, 
           $title, 
           $this->options['type'], 
-          $start_depth
+          $depth
         );
       
     }
@@ -111,7 +187,7 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
     return $output;
   }
 
-  function render_nesting($records, $nesting_field = '') {
+  function render_nesting($records, $nesting_field = '', $term_name = FALSE) {
     $nested_sets = array();
     if (isset($this->view->field[$nesting_field])) {
       $field_alias = $this->view->field[$nesting_field]->field_alias;
@@ -121,37 +197,42 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
       foreach ($records as $index => $row) {
         $nesting = '';
         // @todo Avoid using eval().
+
+        $lineage = $row->$field_alias;
+        // If a filter term was passed, remove the lineage before the term.
+        if ($term_name) {
+          $lineage = strstr($lineage, $term_name);
+          if ($lineage) {
+            $lineage = substr($lineage, strlen($term_name)+1); // +1 for \n
+          }
+        }
+        
+        // Strip weights from the lineage, if any.
+        if ($lineage) {
+          $lineage = explode("\n", $lineage);
+          foreach ($lineage as $key => $value) {
+            if ($value) {
+              $lineage[$key] = lineage_strip_weight($value);
+            }
+          }
+          $lineage = implode("\n", $lineage);
+        }
+          
+        // Add the row to the array.
         $eval = "\$nested_sets"
           . "['"
-          . str_replace("\n", "']['", $row->$field_alias . $index)
+          . str_replace("\n", "']['", $lineage . $index)
           . "']"
           . " = \$this->row_plugin->render(\$row);";
         eval($eval);
-        }
+      }
     }
     else {
       // Create a single group with an empty grouping field.
       $nested_sets[''] = $records;
     }
 
-    // Now, clean up the labels for each set (stripping weights).
-    // @todo If we replace eval() above with a recursion, refactor this.
-    $nested_sets = $this->label_sets($nested_sets);
     return $nested_sets;
-  }
-
-  function label_sets($nested_sets) {
-    $new_sets = array();
-    foreach ($nested_sets as $key => $set) {
-      if (!is_numeric($key)) {
-        $key = lineage_strip_weight($key);
-      }
-      $new_sets[$key] = $set;
-      if (is_array($set)) {
-        $new_sets[$key] = $this->label_sets($set);
-      }
-    }
-    return $new_sets;
   }
 
   function header($header, $depth) {
@@ -170,7 +251,7 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
       $output .=  $this->header($header, $depth);
       $depth++;
     }
- 
+
     $output .=  "<$type>\n";
 
     foreach ($rows as $key => $row) {

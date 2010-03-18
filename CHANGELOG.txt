@@ -2,6 +2,8 @@
 
 Lineage 6.x-1.x, xxxx-xx-xx
 ---------------------------
+ o #723326 by xjm: Added style plugin option to allow omitting redundant 
+   headers when a term ID filter or argument is used.
  o #733992 by xjm: Fixed plugin with grouping for Views 2.8.
  o #721744 by xjm: Changed nesting plugin to allow user to specify starting 
    header depth.
