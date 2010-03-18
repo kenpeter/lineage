@@ -74,21 +74,15 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
     // First group the rows according to the grouping field, if specified.
     $sets = $this->render_grouping($this->view->result, $this->options['grouping']);
 
-    $this->view->row_index = 0;
     foreach ($sets as $title => $records) {
       if ($this->uses_row_plugin()) {
-        $rendered = array();
-        foreach ($records as $label => $row) {
-          $rendered[] = $this->row_plugin->render($row);
-          $this->view->row_index++;
+        foreach ($records as $row_index => $row) {
+          $this->view->row_index = $row_index;
         }
-      }
-      else {
-        $rendered = $records;
       }
 
       // Now, nest each grouping by the nesting field.
-      $nested_set = $this->render_nesting($records, $rendered, $this->options['nesting']);
+      $nested_set = $this->render_nesting($records, $this->options['nesting']);
 
       // Determine the starting depth of the header.
       // If the user has defined a start depth, use that
@@ -117,10 +111,7 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
     return $output;
   }
 
-  function render_nesting($records, $rendered=FALSE, $nesting_field = '') {
-    if (!$rendered) {
-      $rendered = $records;
-    }
+  function render_nesting($records, $nesting_field = '') {
     $nested_sets = array();
     if (isset($this->view->field[$nesting_field])) {
       $field_alias = $this->view->field[$nesting_field]->field_alias;
@@ -134,7 +125,7 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
           . "['"
           . str_replace("\n", "']['", $row->$field_alias . $index)
           . "']"
-          . " = \$rendered['$index'];";
+          . " = \$this->row_plugin->render(\$row);";
         eval($eval);
         }
     }

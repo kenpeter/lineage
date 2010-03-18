@@ -2,6 +2,7 @@
 
 Lineage 6.x-1.x, xxxx-xx-xx
 ---------------------------
+ o #733992 by xjm: Fixed plugin with grouping for Views 2.8.
  o #721744 by xjm: Changed nesting plugin to allow user to specify starting 
    header depth.
  o #733760 by xjm: Added hook_update_N() to update weight strings to the 
