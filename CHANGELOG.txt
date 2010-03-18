@@ -2,6 +2,8 @@
 
 Lineage 6.x-1.x, xxxx-xx-xx
 ---------------------------
+ o #746336 by xjm: Fixed bug introduced in #733992 that was causing all rows 
+   of the style plugin to be rendered as the final row in each grouping.
  o #723326 by xjm: Added style plugin option to allow omitting redundant 
    headers when a term ID filter or argument is used.
  o #733992 by xjm: Fixed plugin with grouping for Views 2.8.
