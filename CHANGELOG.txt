@@ -2,6 +2,7 @@
 
 Lineage 6.x-1.x, xxxx-xx-xx
 ---------------------------
+ o #783488 by kenorb: Fix error on view edit pages.
  o #746336 by xjm: Fixed bug introduced in #733992 that was causing all rows 
    of the style plugin to be rendered as the final row in each grouping.
  o #723326 by xjm: Added style plugin option to allow omitting redundant 

@@ -259,7 +259,7 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
     foreach ($rows as $key => $row) {
       $output .=  "<li>\n"; // @todo Add classes.
       // If the next child is an array of rows, recurse.
-      if (is_array($row)) {
+      if (is_array($row) || is_object($row)) {
         // @todo Allow type to vary per list? (And how would we store that?)
         $output .= $this->nested_list($row, $key, $type, $depth);
       }
