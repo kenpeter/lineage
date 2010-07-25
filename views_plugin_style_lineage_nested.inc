@@ -195,7 +195,7 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
       $field_alias = $this->view->field[$nesting_field]->field_alias;
     }
 
-    if ($nesting_field) {
+    if ($field_alias) {
       foreach ($records as $index => $row) {
         $nesting = '';
         // @todo Avoid using eval().
