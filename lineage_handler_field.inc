@@ -65,7 +65,9 @@ class lineage_handler_field extends views_handler_field {
    */
   function render($values) {
     $options = $this->options ? $this->options : array();
-    extract($options['lineage']);
+    if ($options['lineage']) {
+        extract($options['lineage']);
+    }
 
     $lineage_string = $values->{$this->field_alias};
 
@@ -106,3 +108,4 @@ class lineage_handler_field extends views_handler_field {
     return filter_xss_admin($rendered);
   }
 }
+
