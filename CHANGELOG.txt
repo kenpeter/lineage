@@ -2,6 +2,7 @@
 
 Lineage 6.x-1.x, xxxx-xx-xx
 ---------------------------
+ o #866552 by xjm: Escape quotes properly when using eval().
  o #795996 by kenorb, xjm: Fix additional views preview error.
  o #795954 by kenorb: Fix error when plugin options are not set.
  o #783488 by kenorb: Fix error on view edit pages.

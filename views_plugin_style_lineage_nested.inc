@@ -223,7 +223,7 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
         // Add the row to the array.
         $eval = "\$nested_sets"
           . "['"
-          . str_replace("\n", "']['", $lineage . $index)
+          . str_replace("\n", "']['", addslashes($lineage) . $index)
           . "']"
           . " = \$rendered[\$index];";
         eval($eval);
@@ -240,7 +240,7 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
   function header($header, $depth) {
     // Use a header tag if possible; else use a class indicating header depth.
     if ($depth <= 6) {
-      return "<h$depth>$header</h$depth>\n";
+      return "<h$depth>" . stripslashes($header) . "</h$depth>\n";
     }
     else {
       return "<span class=\"h$depth\">$header</span>\n";
