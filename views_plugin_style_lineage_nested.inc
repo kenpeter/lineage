@@ -170,9 +170,6 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
       // Otherwise, decide based on default and whether a grouping is set.
       else {
         $depth = LINEAGE_START_DEPTH;
-        if ($this->options['grouping']) {
-          $depth++;
-        }
       }
       
       // @todo Provide theming.

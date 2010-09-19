@@ -2,6 +2,7 @@
 
 Lineage 6.x-1.x, xxxx-xx-xx
 ---------------------------
+ o #916394 by xjm: Fix extra header depth increment with grouping fields.
  o #866552 by xjm: Escape quotes properly when using eval().
  o #795996 by kenorb, xjm: Fix additional views preview error.
  o #795954 by kenorb: Fix error when plugin options are not set.
