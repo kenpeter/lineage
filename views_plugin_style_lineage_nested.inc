@@ -133,7 +133,7 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
       // If the user specified a filter for the nesting, remove other levels.
       $term_name = FALSE;
       if ($this->options['filter']) {
-        
+
         // Option is either a filter or an argument, marked by f and a.
         // If it's an argument
         if ($arg_name = strstr($this->options['filter'], "a_")) {
@@ -148,7 +148,7 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
           $terms = $filter->value;
           $term = array_pop($terms);
         }
-        
+
         if (is_numeric($term)) {
           $term_obj = taxonomy_get_term($term);
           $term_name = $term_obj->name;
@@ -156,8 +156,8 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
         else {
           $term_name = $term;
         }
-      } 
- 
+      }
+
      // Now, nest each grouping by the nesting field.
       $nested_set = $this->render_nesting($records, $rendered, $this->options['nesting'], $term_name);
 
@@ -170,16 +170,16 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
       else {
         $depth = LINEAGE_START_DEPTH;
       }
-      
+
       // @todo Provide theming.
-      $output .= 
+      $output .=
         $this->nested_list(
-          $nested_set, 
-          $title, 
-          $this->options['type'], 
+          $nested_set,
+          $title,
+          $this->options['type'],
           $depth
         );
-      
+
     }
     unset($this->view->row_index);
     return $output;
@@ -204,7 +204,7 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
             $lineage = substr($lineage, strlen($term_name)+1); // +1 for \n
           }
         }
-        
+
         // Strip weights from the lineage, if any.
         if ($lineage) {
           $lineage = explode("\n", $lineage);
@@ -215,7 +215,7 @@ class views_plugin_style_lineage_nested extends views_plugin_style_list {
           }
           $lineage = implode("\n", $lineage);
         }
-          
+
         // Add the row to the array.
         $eval = "\$nested_sets"
           . "['"

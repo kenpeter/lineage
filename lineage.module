@@ -169,10 +169,10 @@ function lineage_update_term($term, $all = FALSE) {
   if (!$all) {
     // Select lineage for a different term in this vocab arbitrarily.
     $r = db_query("
-      SELECT tl.lineage, td.tid, td.name, td.weight, td.vid, th.parent 
+      SELECT tl.lineage, td.tid, td.name, td.weight, td.vid, th.parent
         FROM {term_data} td
-          LEFT JOIN {term_lineage} tl ON tl.tid = td.tid 
-          LEFT JOIN {term_hierarchy} th ON td.tid = th.tid 
+          LEFT JOIN {term_lineage} tl ON tl.tid = td.tid
+          LEFT JOIN {term_hierarchy} th ON td.tid = th.tid
         WHERE td.vid = %d
           AND td.tid <> %d
         LIMIT 1;",
