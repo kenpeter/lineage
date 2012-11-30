@@ -9,7 +9,7 @@
  * Implementation of hook_views_data().
  */
 function lineage_views_data() {
-  $data['term_lineage'] = array(
+  $data['taxonomy_term_lineage'] = array(
     'table' => array(
       'group' => t('Taxonomy term'),
       'join' => array(

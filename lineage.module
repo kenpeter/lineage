@@ -14,7 +14,7 @@ define('LINEAGE_START_DEPTH', 3);
  * Implements hook_taxonomy_term_delete().
  */
 function lineage_taxonomy_term_delete($term) {
-  db_delete('term_lineage')->condition('tid', $term->tid)->execute();
+  db_delete('taxonomy_term_lineage')->condition('tid', $term->tid)->execute();
 }
 
 /**
@@ -194,7 +194,7 @@ function lineage_update_term($term, $all = FALSE) {
   if (!$all) {
     // Select lineage for a different term in this vocab arbitrarily.
     $query = db_select('taxonomy_term_data', 'td');
-    $query->join('term_lineage', 'tl', 'tl.tid = td.tid');
+    $query->join('taxonomy_term_lineage', 'tl', 'tl.tid = td.tid');
     $query->join('taxonomy_term_hierarchy', 'th', 'td.tid = th.tid');
     $query->fields('tl', array('lineage'));
     $query->fields('td', array('tid', 'name', 'weight', 'vid'));
@@ -226,8 +226,8 @@ function lineage_update_term_r($term, $base, $tids = array()) {
   $base['depth'] = intval($base['depth']);
 
   // Update the hierarchy for the current tid.
-  db_delete('term_lineage')->condition('tid', $term->tid)->execute();
-  db_insert('term_lineage')->fields(array(
+  db_delete('taxonomy_term_lineage')->condition('tid', $term->tid)->execute();
+  db_insert('taxonomy_term_lineage')->fields(array(
     'tid' => $term->tid,
     'lineage' => trim($base['base']),
     'depth' => $base['depth']
