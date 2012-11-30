@@ -21,7 +21,7 @@ function lineage_taxonomy_term_delete($term) {
  * Implements hook_taxonomy_term_update().
  */
 function lineage_taxonomy_term_update($term) {
-  if (arg() != array('admin', 'content', 'taxonomy', $term->vid)) {
+  if (arg() != array('admin', 'structure', 'taxonomy', $term->vocabulary_machine_name)) {
     lineage_update_term($term);
   }
 }
@@ -30,7 +30,7 @@ function lineage_taxonomy_term_update($term) {
  * Implements hook_taxonomy_term_insert().
  */
 function lineage_taxonomy_term_insert($term) {
-  if (arg() != array('admin', 'content', 'taxonomy', $term->vid)) {
+  if (arg() != array('admin', 'structure', 'taxonomy', $term->vocabulary_machine_name)) {
     lineage_update_term($term);
   }
 }
