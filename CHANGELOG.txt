@@ -1,6 +1,6 @@
 Lineage 7.x-1.x, 2012-11-30
 ---------------------------
-o #1012064 by cafuego: Yes!
+o #1012064 by cafuego: Port Lineage to Drupal 7.
 
 Lineage 6.x-1.x, xxxx-xx-xx
 ---------------------------
