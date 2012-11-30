@@ -23,33 +23,3 @@ function lineage_schema() {
 
   return $schema;
 }
-
-/**
- * Implementation of hook_install().
- */
-function lineage_install() {
-  // Create tables.
-  drupal_install_schema('lineage');
-}
-
-/**
- * Implementation of hook_uninstall().
- */
-function lineage_uninstall() {
-  drupal_uninstall_schema('lineage');
-}
-
-function lineage_update_1() {
-  return _system_update_utf8(array('term_lineage'));
-}
-
-function lineage_update_2() {
-  // fixed a bug that left the table in an inconsistent state. This should fix it.
-  return lineage_update_all();
-}
-
-function lineage_update_6000() {
-  // Changed weight string format, so trigger a full update.
-  lineage_update_all();
-  return array();
-}

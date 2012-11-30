@@ -1,4 +1,14 @@
 <?php
+/**
+ * @file lineage.module
+ * Module code for taxonomy term hierarchy lineage.
+ */
+
+/**
+ * Define a base starting depth for nesting headers.
+ * We use 3 (for <h3> tags) because <h1> and <h2> are generally page titles.
+ */
+define('LINEAGE_START_DEPTH', 3);
 
 /**
  * Implementation of hook_taxonomy().
@@ -143,18 +153,20 @@ function lineage_enable() {
  * @return $count The number of records updated.
  */
 function lineage_update_all($vid = FALSE) {
-  // If we are only updating one vocabulary, select only those terms.
-  $base_q = "SELECT td.tid, td.name, td.weight, td.vid FROM {term_data} td LEFT JOIN {term_hierarchy} th ON th.tid = td.tid WHERE th.parent = 0";
+  $query = db_select('taxonomy_term_data', 'td');
+  $query->join('taxonomy_term_hierarchy', 'th', 'th.tid = td.tid');
 
+  $query->fields('td', array('tid', 'name', 'weight', 'vid'));
+  $query->condition('th.parent', 0);
+
+  // If we are only updating one vocabulary, select only those terms.
   if ($vid) {
-    $result = db_query($base_q . " AND td.vid = %d", $vid);
+    $query->condition('td.vid', $vid);
   }
-  else {
-    $result = db_query($base_q);
-  }
+  $result = $query->execute();
 
   $count = 0;
-  while ($term = db_fetch_object($result)) {
+  foreach ($result as $term) {
     $count += lineage_update_term($term, TRUE);
   }
   return $count;
@@ -168,17 +180,12 @@ function lineage_update_term($term, $all = FALSE) {
   // If we are in the middle of updating all lineages, skip this.
   if (!$all) {
     // Select lineage for a different term in this vocab arbitrarily.
-    $r = db_query("
-      SELECT tl.lineage, td.tid, td.name, td.weight, td.vid, th.parent
-        FROM {term_data} td
+    $other_term = db_query_range('SELECT tl.lineage, td.tid, td.name, td.weight, td.vid, th.parent
+        FROM {taxonomy_term_data} td
           LEFT JOIN {term_lineage} tl ON tl.tid = td.tid
-          LEFT JOIN {term_hierarchy} th ON td.tid = th.tid
-        WHERE td.vid = %d
-          AND td.tid <> %d
-        LIMIT 1;",
-      $term->vid, $term->tid);
-
-    $other_term = db_fetch_object($r);
+          LEFT JOIN {taxonomy_term_hierarchy} th ON td.tid = th.tid
+        WHERE td.vid = "vid
+          AND td.tid <> :tid', 0, 1, array(':vid' => $term->vid, ':tid' => $term->tid));
 
     // If the lineage string doesn't match what we think it should be,
     // an update is required.
@@ -197,17 +204,24 @@ function lineage_update_term_r($term, $base, $tids = array()) {
   // Extend the base.
   $base['base'] .= lineage_string($term);
 
+  // Table wants NO NULL, so just make sure.
+  $base['depth'] = intval($base['depth']);
+
   // Update the hierarchy for the current tid.
-  db_query("DELETE FROM {term_lineage} WHERE tid = %d", $term->tid);
-  db_query("INSERT INTO {term_lineage} (tid, lineage, depth) VALUES (%d, '%s', %d)", $term->tid, $base['base'], $base['depth']);
+  db_delete('term_lineage')->condition('tid', $term->tid)->execute();
+  db_insert('term_lineage')->fields(array(
+    'tid' => $term->tid,
+    'lineage' => trim($base['base']),
+    'depth' => $base['depth']
+  ))->execute();
 
   $base['depth']++;
   // Mark that we've done this one to prevent looping.
   $tids[$term->tid] = TRUE;
 
   // Update all the children.
-  $result = db_query("SELECT td.tid, td.name, td.weight, td.vid FROM {term_hierarchy} th INNER JOIN {term_data} td ON td.tid = th.tid WHERE th.parent = %d", $term->tid);
-  while ($child = db_fetch_object($result)) {
+  $result = db_query('SELECT td.tid, td.name, td.weight, td.vid FROM {taxonomy_term_hierarchy} th INNER JOIN {taxonomy_term_data} td ON td.tid = th.tid WHERE th.parent = :tid', array(':tid' => $term->tid));
+  foreach ($result as $child) {
     // loop protection, just in case.
     if (!isset($tids[$child->tid])) {
       $tids = lineage_update_term_r($child, $base, $tids);
@@ -217,7 +231,7 @@ function lineage_update_term_r($term, $base, $tids = array()) {
 }
 
 function lineage_delete_term($tid) {
-  db_query("DELETE FROM {term_lineage} WHERE tid = %d", $tid);
+  db_delete('term_lineage')->condition('tid', $tid)->execute();
 }
 
 function lineage_string($term) {
@@ -263,9 +277,9 @@ function lineage_get_weight($term_string) {
 }
 
 function _lineage_get_parent_lineage($tid) {
-  $result = db_query("SELECT td.tid, td.name, td.weight, td.vid, th.parent FROM {term_hierarchy} th LEFT JOIN {term_data} td ON td.tid = th.tid WHERE td.tid = %d", $tid);
+  $result = db_query('SELECT td.tid, td.name, td.weight, td.vid, th.parent FROM {taxonomy_term_hierarchy} th LEFT JOIN {taxonomy_term_data} td ON td.tid = th.tid WHERE td.tid = :tid', array(':tid' => $tid));
 
-  if ($term = db_fetch_object($result)) {
+  foreach ($result as $term) {
     $ret = _lineage_get_parent_lineage($term->parent);
 
     $ret['base'] .= lineage_string($term);
@@ -282,7 +296,7 @@ function _lineage_get_parent_lineage($tid) {
  */
 function lineage_views_api() {
   return array(
-    'api' => 2.0,
+    'api' => 3,
   );
 }
 
@@ -297,12 +311,10 @@ function _lineage_weights($vid) {
   static $weights = array();
 
   if (!isset($weights[$vid])) {
-    $min_r = db_query("SELECT MIN(weight) FROM {term_data} WHERE vid = %d", $vid);
-    $weights[$vid]['min'] = db_result($min_r);
+    $weights[$vid]['min'] = db_query('SELECT MIN(weight) FROM {taxonomy_term_data} WHERE vid = :vid', array(':vid' => $vid))->fetchField();
     $weights[$vid]['offset'] = ($weights[$vid]['min'] < 0) ? abs($weights[$vid]['min']) : 0;
 
-    $max_r = db_query("SELECT MAX(weight) FROM {term_data} WHERE vid = %d", $vid);
-    $weights[$vid]['max'] = db_result($max_r);
+    $weights[$vid]['max'] = db_query('SELECT MAX(weight) FROM {taxonomy_term_data} WHERE vid = :vid', array(':vid' => $vid))->fetchField();
     $weights[$vid]['digits'] = floor(log($weights[$vid]['max'] + $weights[$vid]['offset'] + 1));
     if ($weights[$vid]['digits'] == 0) {
       $weights[$vid]['digits']++;

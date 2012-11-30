@@ -9,6 +9,23 @@
  * Field handler for Taxonomy: Hierarchy.
  */
 class lineage_handler_field extends views_handler_field {
+
+  /**
+   *  Make views aware of new options 
+   */
+  function option_definition() {
+    $options = parent::option_definition();
+
+    $options['lineage'] = array();
+    $options['lineage']['strip_weights'] = array('default' => FALSE);
+    $options['lineage']['machine_safe'] = array('default' => FALSE);
+    $options['lineage']['prefix'] = array('default' => '');
+    $options['lineage']['suffix'] = array('default' => '');
+    $options['lineage']['delimiter'] = array('default' => '');
+
+    return $options;
+  }
+
   /**
    * Provide formatting options for the field.
    */
@@ -107,4 +124,3 @@ class lineage_handler_field extends views_handler_field {
     return filter_xss_admin($rendered);
   }
 }
-

@@ -1,5 +1,13 @@
 name = Taxonomy Lineage
 description = Allows other modules to sort nodes by taxonomy hierarchies
-core = 6.x
+core = 7.x
+package = Views
+
 dependencies[] = taxonomy
 dependencies[] = views
+
+; Views handlers.
+files[] = lineage_handler_field.inc
+
+; Views plugins.
+files[] = views_plugin_style_lineage_nested.inc

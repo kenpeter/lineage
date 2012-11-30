@@ -9,57 +9,58 @@
  * Implementation of hook_views_data().
  */
 function lineage_views_data() {
-  $tables['term_lineage'] = array(
+  $data['term_lineage'] = array(
     'table' => array(
-      'group' => t('Taxonomy'),
+      'group' => t('Taxonomy term'),
       'join' => array(
-        'node' => array(
-          'left_table' => 'term_node',
-          'left_field' => 'tid',
-          'field' => 'tid',
-        ),
-        'term_data' => array(
+        'taxonomy_term_data' => array(
           'left_field' => 'tid',
           'field' => 'tid',
         ),
       ),
     ),
     'lineage' => array(
-      'title' => t("Hierarchy"),
+      'title' => t('Hierarchy'),
+      'help' => t('The taxonomy lineage hierarchy.'),
       'field' => array(
         'handler' => 'lineage_handler_field',
         'click sortable' => TRUE,
-        'help' => t('Taxonomy lineage hierarchy'),
+      ),
+      'filter' => array(
+        'handler' => 'views_handler_filter_string',
+        'help' => t('Taxonomy term lineage hierarchy.'),
       ),
       'sort' => array(
         'handler' => 'views_handler_sort',
       ),
+      'argument' => array(
+        'handler' => 'views_handler_argument_string',
+        'help' => t('Taxonomy term lineage hierarchy.'),
+      ),
     ),
     'depth' => array(
-      'title' => t("Depth"),
+      'title' => t('Depth'),
+      'help' => t('The taxonomy lineage depth.'),
       'field' => array(
-        'handler' => 'views_handler_field',
-        'help' => t('Taxonomy lineage depth'),
+        'handler' => 'views_handler_field_numeric',
+        'click sortable' => TRUE,
+      ),
+      'sort' => array(
+        'handler' => 'views_handler_sort',
+      ),
+      'filter' => array(
+        'handler' => 'views_handler_filter_numeric',
+        'help' => t('Taxonomy term lineage depth.'),
+      ),
+      'argument' => array(
+        'handler' => 'views_handler_argument_numeric',
+        'help' => t('Taxonomy term lineage depth.'),
       ),
     ),
   );
 
-  return $tables;
+  return $data;
 }
-
-/**
- * Implementation of hook_views_handlers().
- */
-function lineage_views_handlers() {
-  return array(
-    'handlers' => array(
-      'lineage_handler_field' => array(
-        'parent' => 'views_handler_field',
-      ),
-    ),
-  );
-}
-
 
 /**
  * Implements hook_views_plugins().

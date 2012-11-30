@@ -6,14 +6,6 @@
  * based on Lineage's term hierarchy.
  */
 
-
-/**
- * Define a base starting depth for nesting headers.
- * We use 3 (for <h3> tags) because <h1> and <h2> are generally page titles.
- */
-define('LINEAGE_START_DEPTH', 3);
-
-
 /**
  * Implements views_plugin_style.
  */
