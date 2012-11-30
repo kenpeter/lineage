@@ -7,7 +7,7 @@ dependencies[] = taxonomy
 dependencies[] = views
 
 ; Views handlers.
-files[] = lineage_handler_field.inc
+files[] = handlers/lineage_handler_field.inc
 
 ; Views plugins.
-files[] = views_plugin_style_lineage_nested.inc
+files[] = plugins/views_plugin_style_lineage_nested.inc
