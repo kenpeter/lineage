@@ -342,7 +342,11 @@ function _lineage_get_parent_lineage($tid) {
     return $ret;
   }
 
-  return array();
+  // Return an empty set to suppress warnings in lineage_update_term_r().
+  return array(
+    'base' => '',
+    'depth' => 0
+  );
 }
 
 /**
